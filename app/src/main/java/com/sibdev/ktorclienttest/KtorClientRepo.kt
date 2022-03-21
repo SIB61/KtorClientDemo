@@ -12,14 +12,19 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.json.Json
 import java.lang.reflect.Type
 
 class KtorClientRepo {
     companion object {
         val client = HttpClient(Android) {
             install(ContentNegotiation) {
-                json()
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
+
             }
+
 //            install(Auth){
 //                bearer {
 //                    loadTokens {
@@ -29,9 +34,17 @@ class KtorClientRepo {
 //           }
         }
     }
-    suspend fun getPosts() : List<UnsplashModel> {
+    suspend fun getImages() : List<UnsplashModel> {
         return client.get {
             url("https://api.unsplash.com/photos")
+            headers{
+                append(HttpHeaders.Authorization,UrlConstants.ACCESS_KEY)
+            }
+        }.body()
+    }
+    suspend fun getSearchedImages(s:String) : List<UnsplashModel> {
+        return client.get {
+            url("https://api.unsplash.com/photos/?query=$s")
             headers{
                 append(HttpHeaders.Authorization,UrlConstants.ACCESS_KEY)
             }
